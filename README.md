@@ -12,9 +12,6 @@ npm run dev       # start the dev server
 npm run build      # production build (must succeed with zero console errors)
 ```
 
-Before running, copy `14.jpg`, `12.png`, `a4.jpg`, and `Resume.pdf` from the
-old static `Portfolio-Website` folder into `public/` (see
-`public/README-images.txt`).
 
 ## Component Tree
 

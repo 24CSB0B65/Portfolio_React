@@ -1,0 +1,273 @@
+{
+  "info": {
+    "name": "Portfolio Backend API",
+    "description": "Covers Auth, Projects, and Messages endpoints — success, validation-failure, and auth-failure cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "messageId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (success)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('token', body.data.token);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"deekshitha\",\n  \"email\": \"deekshitha@example.com\",\n  \"password\": \"SuperSecret123\"\n}" }
+          }
+        },
+        {
+          "name": "Register (validation failure)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"a\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\"\n}" }
+          }
+        },
+        {
+          "name": "Register (duplicate email)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 409', () => pm.response.to.have.status(409));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"deekshitha2\",\n  \"email\": \"deekshitha@example.com\",\n  \"password\": \"SuperSecret123\"\n}" }
+          }
+        },
+        {
+          "name": "Login (success)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('token', body.data.token);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"deekshitha@example.com\",\n  \"password\": \"SuperSecret123\"\n}" }
+          }
+        },
+        {
+          "name": "Login (wrong password)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"deekshitha@example.com\",\n  \"password\": \"wrongpass\"\n}" }
+          }
+        },
+        {
+          "name": "Get current user (no token -> 401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" }
+        },
+        {
+          "name": "Get current user (with token)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create project (no auth -> 401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/projects",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"PIPS\",\n  \"description\": \"Personal Income Prediction System\"\n}" }
+          }
+        },
+        {
+          "name": "Create project (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('projectId', body.data.id);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/projects",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"PIPS\",\n  \"description\": \"Personal Income Prediction System\",\n  \"tech\": [\"Python\", \"Scikit-learn\"],\n  \"link\": \"https://github.com/24CSB0B65\"\n}" }
+          }
+        },
+        {
+          "name": "List projects (public)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects?page=1&limit=10" }
+        },
+        {
+          "name": "Get project by id (public)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}" }
+        },
+        {
+          "name": "Get project (not found -> 404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/999999" }
+        },
+        {
+          "name": "Update project (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"PIPS (Updated)\"\n}" }
+          }
+        },
+        {
+          "name": "Delete project (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 204', () => pm.response.to.have.status(204));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/projects/{{projectId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Submit contact message (public, success)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.collectionVariables.set('messageId', body.data.id);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/messages",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Recruiter\",\n  \"email\": \"john@company.com\",\n  \"message\": \"Loved your portfolio, let's talk!\"\n}" }
+          }
+        },
+        {
+          "name": "Submit contact message (validation failure)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 400', () => pm.response.to.have.status(400));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/messages",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"email\": \"bad\",\n  \"message\": \"hi\"\n}" }
+          }
+        },
+        {
+          "name": "List messages (no auth -> 401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/messages" }
+        },
+        {
+          "name": "List messages (authenticated as admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/messages?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get message by id (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/messages/{{messageId}}"
+          }
+        },
+        {
+          "name": "Delete message (authenticated)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 204', () => pm.response.to.have.status(204));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/messages/{{messageId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Misc",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+        },
+        {
+          "name": "Unknown route (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('status 404', () => pm.response.to.have.status(404));"
+          ]}}],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/does-not-exist" }
+        }
+      ]
+    }
+  ]
+}
