@@ -404,24 +404,15 @@ http://localhost:5000/api/contact
 ### Example Response
 
 ```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "Deekshitha",
-      "email": "test@example.com",
-      "message": "Hello, this is a test message.",
-      "isRead": false
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
+[
+  {
+    "id": 1,
+    "name": "Deekshitha",
+    "email": "test@example.com",
+    "message": "Hello, this is a test message.",
+    "isRead": false
   }
-}
+]
 ```
 
 This endpoint is intentionally open without authentication for assignment verification.

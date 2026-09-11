@@ -1,13 +1,9 @@
 const express = require("express");
-
-const { createMessage, listMessages } = require("../controllers/messageController");
-
+const validator = require("validator");
+const { Message } = require("../models");
+const catchAsync = require("../utils/catchAsync");
 const validate = require("../middleware/validate");
-
-const {
-  createMessageSchema,
-  listQuerySchema,
-} = require("../validators/messageValidators");
+const { createMessageSchema } = require("../validators/messageValidators");
 
 const router = express.Router();
 
@@ -15,14 +11,34 @@ const router = express.Router();
 router.post(
   "/",
   validate({ body: createMessageSchema }),
-  createMessage
+  catchAsync(async (req, res) => {
+    const name = validator.escape(req.body.name);
+    const message = validator.escape(req.body.message);
+    const email = req.body.email.toLowerCase();
+
+    const saved = await Message.create({
+      name,
+      email,
+      message,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: saved,
+    });
+  })
 );
 
 // GET /api/contact
 router.get(
   "/",
-  validate({ query: listQuerySchema }),
-  listMessages
+  catchAsync(async (req, res) => {
+    const messages = await Message.findAll({
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(messages);
+  })
 );
 
 module.exports = router;
